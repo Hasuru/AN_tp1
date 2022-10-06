@@ -70,7 +70,7 @@ double macheps(double eps) {
 }
 
 double limEuler(double n) {
-    double e = 1+(1/n);
+    double e = 1+(1/pow(10,n));
     return pow(e,n);
 }
 
