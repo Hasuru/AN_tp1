@@ -1,0 +1,59 @@
+\documentclass[12pt, letterpaper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{mathtools}
+\usepackage{indentfirst}
+
+\title{Erros}
+\author{Grupo 39}
+\date{October 9, 2022}
+
+\begin{document}
+
+\maketitle
+
+\section*{Introdução}
+
+Este trabalho prático visa estudar os erros de cálculo em números reais, que tendem a ser um grande problema para computadores, e em geral, em dispositivos capazes de avaliar o campo da aritmétrica.
+
+Durante este trabalho irá ser estudado a forma como os valores aproximados, os limites, as somas infinitas e os erros absolutos afetam os valores calculados. 
+
+Pretende-se assim analizar a eficácia do computador e dos próprios métodos usados, e consequentemente, os resultados obtidos via tais computações.
+
+Para além disso, vale a pena frisar que todos os cálculos feitos e todos os valores foram obtidos usando a linguagem \textbf{C/C++}. 
+
+\section*{Epsilon Máquina (macheps)}
+O \textbf{macheps} utilizado pela máquina pode ser obtido pela função:
+\begin{verbatim}
+    type macheps() {
+        type eps = 0.5;
+        type macheps;
+        while ((1+eps) != 1) {
+            macheps = eps;
+            eps /= 2;
+        }
+        return macheps;
+    }
+\end{verbatim}
+
+$type \in (float, double, long double)$
+
+Sendo assim temos 3 valores que o macheps vai tomar (dependendo do tipo a ser usado):
+
+\begin{description}
+    \item[Float:]\textit{macheps} = 1.192093\textit{e}-07
+    \item[Double:]\textit{macheps} = 2.220446\textit{e}-16
+    \item[Long Double:]\textit{macheps} = 1.084202\textit{e}-19
+\end{description}
+
+\small Nota: C só representa 7 algarismos significativos para estes valores, o que pode já ser uma causa de erros futuros.
+
+\section*{Exercício 2}
+Queremos calcular o valor aproximado de:
+\[S=18\sum_{k=1}^{\infty}\frac{k!^2}{k^2(2k)!}\]
+
+Podemos observar que \textit{S} é uma série de termos positivos e também sabemos que $\forall n$:
+$$a_n = \frac{n!^2}{n^2(2n)!}$$
+\newline
+
+Passamos a calcular o limite entre $a_n$ e $a_{n+1}$ para saber se a série é convergente ou não. Sendo assim:
+\end{document}
