@@ -1,0 +1,126 @@
+\documentclass[12pt, letterpaper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{mathtools}
+\usepackage{indentfirst}
+
+\title{Erros}
+\author{Grupo 39}
+\date{October 9, 2022}
+
+\begin{document}
+
+\maketitle
+
+\section*{Introdução}
+
+Este trabalho prático visa estudar os erros de cálculo em números reais, que tendem a ser um grande problema para computadores, e em geral, em dispositivos capazes de avaliar o campo da aritmétrica.
+
+Durante este trabalho irá ser estudado a forma como os valores aproximados, os limites, as somas infinitas e os erros absolutos afetam os valores calculados. 
+
+Pretende-se assim analizar a eficácia do computador e dos próprios métodos usados, e consequentemente, os resultados obtidos via tais computações.
+
+Para além disso, vale a pena frisar que todos os cálculos feitos e todos os valores foram obtidos usando a linguagem \textbf{C/C++}. 
+
+\section*{Epsilon Máquina (macheps)}
+O \textbf{macheps} utilizado pela máquina pode ser obtido pela função:
+\begin{verbatim}
+    type macheps() {
+        type eps = 0.5;
+        type macheps;
+        while ((1+eps) != 1) {
+            macheps = eps;
+            eps /= 2;
+        }
+        return macheps;
+    }
+\end{verbatim}
+
+$type \in (float, double, long double)$
+
+Sendo assim temos 3 valores que o macheps vai tomar (dependendo do tipo a ser usado):
+
+\begin{description}
+    \item[Float:]\textit{macheps} = 1.192093\textit{e}-07
+    \item[Double:]\textit{macheps} = 2.220446\textit{e}-16
+    \item[Long Double:]\textit{macheps} = 1.084202\textit{e}-19
+\end{description}
+
+\small Nota: C só representa 7 algarismos significativos para estes valores, o que pode já ser uma causa de erros futuros.
+
+\section*{Exercício 2}
+Queremos calcular o valor aproximado de:
+\[S=18\sum_{k=1}^{\infty}\frac{k!^2}{k^2(2k)!}\]
+
+Podemos observar que \textit{S} é uma série de termos positivos e também sabemos que $\forall n$:
+$$a_n = \frac{n!^2}{n^2(2n)!}$$
+\newline
+
+Passamos a calcular o limite entre $a_n$ e $a_{n+1}$ para saber se a série é convergente ou não. Sendo assim: 
+$$\lim_{n \to \infty} \frac{a_{n+1}}{a_n}$$
+\newline
+
+Manipulando a expressão $a_{n+1}$ sabemos que:
+$$a_{n+1} = \frac{(n+1)!^2}{(n+1)^2(2(n+1))!} = \frac{n!^2(n+1)^2}{(n+1)^2(2n+2)!} = \frac{n!^2}{(2n+2)!} = \frac{n!^2}{(2n+2)(2n+1)(2n)!} =$$
+$$\frac{n!^2}{n^2(2n)!} \frac{n^2}{(2n+2)(2n+1)} = a_n\frac{n^2}{(2n+2)(2n+1)}$$
+\newline
+
+Assim, o limite entre $a_n$ e $a_{n+1}$ é:
+$$\lim_{n \to \infty} \frac{a_{n+1}}{a_n} = \lim_{n \to \infty} \frac{a_n \frac{n^2}{(2n+2)(2n+1)}}{a_n} = \lim_{n \to \infty} \frac{n^2}{(2n+2)(2n+1)} = \lim_{n \to \infty} \frac{n^2}{4n^2+6n+2} = $$
+$$\lim_{n \to \infty} \frac{n^2}{n^2(4+ \frac{6}{n} + \frac{2}{n^2})} = \frac{1}{4} < 1$$
+\newline
+
+Como o limite entre $a_n$ e $a_{n+1}$ é menor do que 1, pelo critério de D'Alembert, a série é convergente e o erro é majorado por $R_n \leq a_{n+1} \frac{1}{1-L}$. Portanto, basta encontrar um \textit{n} tal que $a_{n+1} \frac{1}{1-L} < \epsilon$.
+\newline
+Seja $S_n=18\sum_{k=1}^{n-1} \frac{k!^2}{k^2(2k)!}$ a soma parcial dos \textit{n} primeiros termos de \textit{S} e seja $R_n = S - S_n$. Tem-se que:
+$$|R_n| \leq a_n \frac{1}{1-\frac{1}{4}} = \frac{4}{3} a_n$$
+\newline
+Logo, basta encontrar um \textit{n} tal que $\frac{4}{3} \frac{n!^2}{n^2(2n)!} < \epsilon$ e somar os primeiros \textit{n} termos da série. O programa usado foi o seguinte:
+\begin{verbatim}
+    double calc_sum(double low, double high) {
+        double sum = 0;
+        while (low <= high) {
+            sum += s(low);
+            low++;
+        }
+        return sum;
+    }
+    double s(double n) {
+        return (18*pow(factorial(n),2))/(pow(n, 2)*factorial(2*n));
+    }
+    void error_values() {
+        double epsilon[8] = {8,9,10,11,12,13,14,15};
+        double n = 1;
+        double prev = 1;
+        double sum = 0;
+    
+        for (int i = 0; i < 8; i++) {
+            while (s(n+1)*(4/3) >= pow(10,-epsilon[i])) n++;
+            sum += calc_sum(prev, n);
+            prev = n+1;
+            printf("exp:%.0f | n:%.0f | sum:%0.19f | error:%0.19f\n", 
+                epsilon[i], n, sum, pow(M_PI,2)-sum);
+        }
+    }
+\end{verbatim}
+
+Sabemos que o valor exato de \textit{S} é $\pi^2$. Podemos calcular o valor efetivo do erro absoluto através da expressão $E = |\pi^2 - S|$ para cada valor aproximado de \textit{S}. Para isso, tomamos o valor exato de $\pi$ disponível na biblioteca math.h do C. Como esse valor tem 20 casas decimais corretas, o erro absoluto é, no máximo, $5*10^{-21}$.
+
+Resultados obtidos:
+\begin{center}
+    \begin{tabular}{|| c | c | c | c ||}       \hline
+ $\epsilon$ & n & S & $|\pi^2 - S|$\\  [0.4ex] \hline\hline
+ $10^{-8}$  & 13 & 9.8696043981327523653 & 0.0000000029566056270 \\  \hline
+ $10^{-9}$  & 14 & 9.8696044004219967150 & 0.0000000006673612774 \\  \hline
+ $10^{-10}$ & 16 & 9.8696044010547119285 & 0.0000000000346460638 \\  \hline
+ $10^{-11}$ & 17 & 9.8696044010814016900 & 0.0000000000079563023 \\  \hline
+ $10^{-12}$ & 19 & 9.8696044010889334430 & 0.0000000000004245493 \\  \hline
+ $10^{-13}$ & 20 & 9.8696044010892602927 & 0.0000000000000976996 \\  \hline
+ $10^{-14}$ & 22 & 9.8696044010893544396 & 0.0000000000000035527 \\  \hline
+ $10^{-15}$ & 23 & 9.8696044010893579923 & 0.0000000000000000000 \\ [0.4ex]\hline
+    \end{tabular}
+\end{center}
+
+Analisando os valores da tabela, os termos a somar foram-se mantendo relativamente baixos, mesmo para valores de $\epsilon$ pequenos. As aproximações obtidas pelo programa mostram que a série converge monotonamente para o valor exato de $\pi^2$, logo estão de acordo com o esperado.
+Como é possível ver na última coluna da tabela, os valores dos erros absolutos são todos menores do que o valor de $\epsilon$ dado em cada caso. Logo, foram conseguidas aproximações corretas de \textit{S} para cada valor de $\epsilon$. Além disso, podemos ver que o erro absoluto é $10^{-16}$ e, portanto, menor que todos os $\epsilon$ dados.
+
+\end{document}
